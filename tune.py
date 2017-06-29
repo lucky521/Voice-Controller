@@ -1,22 +1,45 @@
 import wave
 import numpy
 import sys
+import matplotlib
+import matplotlib.pyplot as plt
+#########################################################################
+# Matplotlib
+def show_fft(fft_data, fft_data2):
+    fig, ax = plt.subplots(2,1)
+    ax[0].plot(fft_data)
+    ax[1].plot(fft_data2)
+    plt.show()
+    return
+
+#########################################################################
+# Tuning functions
 
 def tune(data, ratio):
     fft_data = numpy.fft.rfft(data)
-    new_fft = [fft_data[(round(i/float(ratio)))%len(fft_data)] for i in xrange(len(fft_data))]
-    #new_fft = [fft_data[round(i/1.25)] for i in xrange(len(fft_data))]
+    #new_fft = [fft_data[(round(i/float(ratio)))%len(fft_data)] for i in xrange(len(fft_data))]
+    new_fft = []
+    for i in xrange(len(fft_data)):
+        new_fft.append(fft_data[(round(i/float(ratio)))%len(fft_data)])
+    #print "len(data)",len(data),"len(fft_data)",len(fft_data),"len(new_fft)",len(new_fft)
+    #show_fft(fft_data, new_fft)
     return numpy.fft.irfft(new_fft)
 
 def tuneChannel(data, ratio):
     ret = []
     chunksize = wav.getframerate() / 8
+    print "chunksize", chunksize
     for i in xrange(0, len(data), chunksize):
         chunk = data[i:i+chunksize]
         ret += list(tune(chunk, ratio))
     return ret
 
 ##########################################################################
+# Filtering functions
+
+
+##########################################################################
+# Main process
 if len(sys.argv) != 3:
     print "Usage: python tune.py test.wave 1.25"
     sys.exit()
@@ -55,5 +78,4 @@ new_wav = wave.open('out.wav', 'w')
 new_wav.setparams(wav.getparams())
 new_wav.writeframes(final_data)
 new_wav.close()
-
 
